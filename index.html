@@ -191,7 +191,7 @@ dialog{border:0;border-radius:16px;padding:0;max-width:760px;width:94%;box-shado
       </svg>
       <div class="txt"><b>TCC & Monografia Studio</b><small>Assistente acadêmico e de desenvolvimento profissional</small></div>
     </div>
-    <button class="mobileMenu" onclick="toggleDrawer()">Menu</button>
+    <div style="display:flex;gap:6px"><button class="mobileMenu" onclick="LVAccount.open()">Minha licença</button><button class="mobileMenu" onclick="toggleDrawer()">Menu</button></div>
   </div>
 </div>
 
@@ -205,6 +205,7 @@ dialog{border:0;border-radius:16px;padding:0;max-width:760px;width:94%;box-shado
   <button class="drawerItem" onclick="go('sources');toggleDrawer(false)">Referências</button>
   <button class="drawerItem" onclick="go('models');toggleDrawer(false)">Modelos por Área</button>
   <button class="drawerItem" onclick="go('career');toggleDrawer(false)">Carreira & Pós</button>
+  <button class="drawerItem" onclick="LVAccount.open();toggleDrawer(false)">Minha conta e licença</button>
   <button class="drawerItem" onclick="go('commercial');toggleDrawer(false)">Licenciamento</button>
   <button class="drawerItem" onclick="go('quality');toggleDrawer(false)">Qualidade</button>
   <button class="drawerItem" onclick="go('backup');toggleDrawer(false)">Backup</button>
@@ -237,7 +238,8 @@ dialog{border:0;border-radius:16px;padding:0;max-width:760px;width:94%;box-shado
       <text x="162" y="112" font-family="Arial,sans-serif" font-size="12" font-weight="600" fill="#64748b">assistente acadêmico • carreira • qualidade</text>
     </svg>
   </div>
-  <div class="version">VERSÃO 4.0 • PRO STANDALONE</div>
+  <div class="version">VERSÃO 4.1 • LIMA VIRTUAL</div>
+  <button class="btn gold" style="width:100%;margin:0 0 12px" type="button" onclick="LVAccount.open()">♙ Minha conta e licença</button>
   <div class="nav" id="desktopNav">
     <button class="active" data-v="home"><span class="ico">⌂</span>Início</button>
     <button data-v="project"><span class="ico">▣</span>Meu Projeto</button>
@@ -667,6 +669,16 @@ dialog{border:0;border-radius:16px;padding:0;max-width:760px;width:94%;box-shado
   <div class="modal" id="legalContent"></div>
 </dialog>
 
+<dialog id="lvAccountDialog" style="max-width:620px;width:min(94vw,620px)">
+ <div class="modal">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><div><h2 style="margin:0">Minha conta e licença</h2><p class="muted" style="margin:5px 0 0">Acesso seguro pelo Google e consulta da licença do TCC & Monografia Studio.</p></div><button class="btn ghost" type="button" onclick="LVAccount.close()">Fechar</button></div>
+  <div id="lvAuthPanel" class="item" style="margin-top:14px" aria-live="polite"><b>Identificação</b><p class="muted">Verificando autenticação…</p></div>
+  <div id="lvLicensePanel" class="item" style="margin-top:10px" aria-live="polite"><b>Situação da licença</b><p class="muted">Aguardando identificação.</p></div>
+  <div class="toolbar"><button class="btn primary" id="lvGoogleBtn" type="button" onclick="LVAccount.signIn()">G Entrar com Google</button><button class="btn alt" id="lvRefreshBtn" type="button" onclick="LVAccount.refresh()">Verificar licença novamente</button><button class="btn ghost" id="lvSignOutBtn" type="button" onclick="LVAccount.signOut()" hidden>Sair da conta</button></div>
+  <p class="small">O login apenas identifica a conta. O acesso completo depende de uma licença confirmada e vigente no servidor. A demonstração continua disponível sem login.</p>
+ </div>
+</dialog>
+
 <script>
 const $ = id => document.getElementById(id);
 const IDs = ['tipo','curso','instituicao','tema','problema','hipotese','objetivoG','objetivosE','justificativa','delimitacao','abordagem','metodo','norma','orientadorObs','careerCourse','careerLocation','careerInterest','careerGoal'];
@@ -985,8 +997,7 @@ const modelBank = {
   },
   saude:{
     title:'Saúde',
-    topics:[
-      'Qualidade e segurança em serviços de saúde',
+    topics:[      'Qualidade e segurança em serviços de saúde',
       'Gestão da informação em saúde',
       'Educação em saúde e adesão ao cuidado',
       'Tecnologias digitais aplicadas à assistência',
@@ -1368,5 +1379,62 @@ careerGuide();
 renderModels();
 renderCommercial();
 </script>
-</body>
-</html>
+<!-- Lima Virtual: autenticação, licença e modo de demonstração -->
+<style id="lv-demo-style">
+#lvDemoRibbon{position:sticky;top:0;z-index:2147483000;background:linear-gradient(90deg,#0b1020,#24476b);color:#fff;padding:9px 14px;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;font:700 13px/1.35 system-ui,sans-serif;box-shadow:0 4px 16px #0002}
+#lvDemoRibbon strong{color:#57e6c2}#lvDemoRibbon span{opacity:.94}.lv-demo-locked{opacity:.48!important;filter:grayscale(.55)}
+#lvDemoNotice{position:fixed;z-index:2147483647;left:50%;bottom:18px;transform:translateX(-50%);background:#0b1020;color:#fff;border:1px solid #57e6c2;border-radius:12px;padding:12px 16px;max-width:min(92vw,520px);box-shadow:0 10px 30px #0005;font:600 13px/1.45 system-ui,sans-serif;display:none}
+</style>
+<script>
+(()=>{
+ const APP='TCC e Monografia Studio';
+ const APP_ID='915a7d31-76c6-46a9-b29d-36049ca264d7';
+ const SUPABASE_URL='https://piagfpnjiwpngbikkkfp.supabase.co';
+ const PUBLISHABLE_KEY='sb_publishable_G7GV4Yox1KkbjZtjnYxFAQ_kzo9V05a';
+ const BLOCK=['administração','painel institucional','painel do professor','responsáveis','licenciamento','exportar','exportação','backup','restaurar','importar','ranking','comunidade','relatórios','relatorio','auditoria','qa /','qa automatizado','banco & backup','gestão avançada','configurações avançadas','configuração avançada'];
+ let client=null,user=null,license=null,authReady=false,authMessage='Inicializando autenticação…',timer=null;
+ const norm=s=>(s||'').toLocaleLowerCase('pt-BR').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
+ const blocked=el=>{const t=norm(el.innerText||el.textContent||el.getAttribute('aria-label')||'');return BLOCK.some(w=>t.includes(norm(w)));};
+ function notice(msg){let n=document.getElementById('lvDemoNotice');if(!n){n=document.createElement('div');n.id='lvDemoNotice';document.body.appendChild(n)}n.textContent=msg||'Recurso reservado à versão licenciada. Entre com Google para verificar sua licença.';n.style.display='block';clearTimeout(timer);timer=setTimeout(()=>n.style.display='none',3600);}
+ function active(){return !!license&&license.status==='active'&&(!license.starts_at||new Date(license.starts_at)<=new Date())&&(!license.expires_at||new Date(license.expires_at)>new Date());}
+ function render(){
+  const ap=document.getElementById('lvAuthPanel'),lp=document.getElementById('lvLicensePanel');
+  if(ap)ap.innerHTML='<b>Identificação</b><p style="margin:7px 0">'+(user?('<strong>'+escapeHtml(user.user_metadata?.full_name||user.email||'Conta Google')+'</strong><br><span class="muted">'+escapeHtml(user.email||'')+'</span>'):'<span class="muted">Visitante sem login</span>')+'</p><p class="small">'+escapeHtml(authMessage)+'</p>';
+  if(lp){if(active()){lp.innerHTML='<b>Situação da licença</b><div class="alert ok"><strong>LICENÇA ATIVA</strong><br>'+APP+' · '+escapeHtml(license.plan_code||'Plano individual')+'<br>Validade até: '+new Date(license.expires_at).toLocaleString('pt-BR')+'</div><p class="small">Licença confirmada pelo servidor Lima Virtual.</p>';}else{lp.innerHTML='<b>Situação da licença</b><div class="alert warn">'+(user?'Nenhuma licença vigente foi localizada para esta conta.':'Entre com Google para consultar sua licença.')+'</div><p class="small">Você pode continuar utilizando a demonstração gratuita.</p>';}}
+  const gb=document.getElementById('lvGoogleBtn'),sb=document.getElementById('lvSignOutBtn');if(gb){gb.hidden=!!user;gb.disabled=!authReady;}if(sb)sb.hidden=!user;
+  applyMode();
+ }
+ function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+ function applyMode(){
+  const paid=active();let ribbon=document.getElementById('lvDemoRibbon');
+  if(paid){if(ribbon)ribbon.remove();document.querySelectorAll('[data-lv-demo-blocked]').forEach(el=>{delete el.dataset.lvDemoBlocked;el.classList.remove('lv-demo-locked');el.removeAttribute('aria-disabled');});window.LIMA_VIRTUAL_DEMO={active:false,app:APP,mode:'licensed'};return;}
+  if(!ribbon){ribbon=document.createElement('div');ribbon.id='lvDemoRibbon';ribbon.innerHTML='<strong>DEMONSTRAÇÃO GRATUITA</strong><span>'+APP+' · acesso a recursos selecionados</span><span>Entre com Google para consultar sua licença.</span>';document.body.insertBefore(ribbon,document.body.firstChild);}
+  document.querySelectorAll('button,a,[role=button],[role=tab]').forEach(el=>{if(blocked(el)&&!el.closest('#lvAccountDialog')){el.classList.add('lv-demo-locked');el.dataset.lvDemoBlocked='1';el.setAttribute('aria-disabled','true');}});
+  window.LIMA_VIRTUAL_DEMO={active:true,app:APP,mode:'limited'};
+ }
+ async function init(){
+  try{const mod=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/+esm');client=mod.createClient(SUPABASE_URL,PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce'}});authReady=true;
+   client.auth.onAuthStateChange((event,session)=>{setTimeout(async()=>{user=session?.user||null;license=null;authMessage=user?'Conta autenticada. Consultando licença…':'Visitante sem login.';render();if(user)await refresh();},0);});
+   const {data,error}=await client.auth.getSession();if(error)throw error;user=data.session?.user||null;authMessage=user?'Conta autenticada. Consultando licença…':'Entre com Google para consultar sua licença.';render();if(user)await refresh();
+  }catch(e){authMessage='Autenticação indisponível: '+(e?.message||'verifique a conexão e tente novamente.');render();}
+ }
+ async function refresh(){
+  if(!client||!user){license=null;render();return;}
+  authMessage='Consultando licença segura no servidor…';render();
+  try{const {data,error}=await client.from('plv_app_licenses').select('status,plan_code,starts_at,expires_at,source').eq('app_id',APP_ID).eq('user_id',user.id).eq('status','active').order('expires_at',{ascending:false}).limit(5);if(error)throw error;
+   const now=Date.now();license=(data||[]).find(x=>(!x.starts_at||Date.parse(x.starts_at)<=now)&&(!x.expires_at||Date.parse(x.expires_at)>now))||null;
+   authMessage=license?'Conta autenticada. Licença confirmada.':'Conta autenticada. Não foi encontrada licença vigente para este aplicativo.';
+  }catch(e){license=null;authMessage='Não foi possível consultar a licença: '+(e?.message||'erro de conexão')+'. A demonstração permanece disponível.';}
+  render();
+ }
+ async function signIn(){if(!client){notice('Autenticação ainda não foi carregada. Aguarde e tente novamente.');return;}try{const {error}=await client.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}});if(error)throw error;}catch(e){authMessage='Falha ao iniciar Google: '+(e?.message||e);render();}}
+ async function signOut(){if(client)await client.auth.signOut();user=null;license=null;authMessage='Sessão encerrada. Você está no modo demonstração.';render();}
+ function open(){const d=document.getElementById('lvAccountDialog');if(d&&!d.open)d.showModal();render();if(user)refresh();}
+ function close(){const d=document.getElementById('lvAccountDialog');if(d?.open)d.close();}
+ document.addEventListener('click',e=>{const el=e.target.closest('button,a,[role=button],[role=tab]');if(el&&el.dataset.lvDemoBlocked==='1'&&!active()){e.preventDefault();e.stopImmediatePropagation();notice();}},true);
+ window.LVAccount={open,close,signIn,signOut,refresh};
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{applyMode();init();},{once:true});else{applyMode();init();}
+})();
+</script>
+
+</body></html>

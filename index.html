@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#081b33">
-<title>TCC & Monografia Studio 4.0</title>
+<title>TCC & Monografia Studio 4.2</title>
 <link rel="icon" href='data:image/svg+xml;utf8,
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
 <defs>
@@ -355,36 +355,24 @@ dialog{border:0;border-radius:16px;padding:0;max-width:760px;width:94%;box-shado
   </section>
 
   <section id="assistant" class="view">
-    <div class="grid">
-      <div class="card c5">
-        <h3>Assistente de redação acadêmica</h3>
-        <label>Seção</label>
-        <select id="assistSec">
-          <option>Introdução</option><option>Justificativa</option><option>Referencial teórico</option>
-          <option>Metodologia</option><option>Resultados</option><option>Discussão</option><option>Considerações finais</option>
-        </select>
-        <label>Objetivo da intervenção</label>
-        <select id="assistAction">
-          <option>Gerar estrutura de parágrafos</option>
-          <option>Reformular minhas notas</option>
-          <option>Expandir com cautela</option>
-          <option>Resumir minhas notas</option>
-          <option>Gerar perguntas de revisão</option>
-        </select>
-        <label>Notas, fatos e evidências fornecidas pelo autor</label>
-        <textarea id="assistNotes" style="min-height:190px" placeholder="Cole aqui apenas informações que você conhece, observou ou possui fonte para sustentar."></textarea>
-        <div class="toolbar">
-          <button class="btn primary" onclick="assist()">Processar</button>
-          <button class="btn ghost" onclick="assistantToEditor()">Enviar ao editor</button>
-        </div>
-        <div class="alert info">A aplicação não inventa autores, dados, resultados ou referências. Quando faltar sustentação, marca o ponto para validação.</div>
-      </div>
-      <div class="card c7">
-        <h3>Resultado assistido</h3>
-        <textarea id="assistOut" style="min-height:490px"></textarea>
-      </div>
-    </div>
-  </section>
+<div class="grid">
+<div class="card c5">
+<h3>Assistente Acadêmico Inteligente</h3>
+<p class="muted">Central operacional do projeto: diagnóstico, planejamento, metodologia, evidências, redação responsável, auditoria e preparação para a banca.</p>
+<label>Modo de operação</label>
+<select id="assistMode">
+<option value="diagnostico">Diagnóstico inteligente do projeto</option><option value="plano">Plano de ação e próximos passos</option><option value="metodologia">Desenho e coerência metodológica</option><option value="evidencias">Matriz de evidências e lacunas</option><option value="redacao">Apoio à redação acadêmica</option><option value="auditoria">Auditoria crítica do texto</option><option value="banca">Preparação para apresentação e banca</option><option value="prompt">Comando avançado para IA externa</option>
+</select>
+<label>Seção ou foco</label>
+<select id="assistSec"><option>Projeto completo</option><option>Introdução</option><option>Justificativa</option><option>Referencial teórico</option><option>Metodologia</option><option>Resultados</option><option>Discussão</option><option>Considerações finais</option></select>
+<label>Material, notas, dados ou dúvida</label>
+<textarea id="assistNotes" style="min-height:190px" placeholder="Descreva o que já foi feito, cole um trecho, informe dados reais ou explique a dificuldade. O assistente cruza isso com os dados cadastrados no projeto."></textarea>
+<div class="toolbar"><button class="btn primary" onclick="assist()">Executar análise</button><button class="btn ghost" onclick="assistantToEditor()">Enviar ao editor</button><button class="btn ghost" onclick="copyAssistantResult()">Copiar resultado</button></div>
+<div class="alert info">Motor operacional local: usa os dados do projeto no navegador, sem enviar seu conteúdo a serviços externos. Não inventa referências, resultados ou citações. O modo IA externa gera um comando avançado para uso em um modelo de linguagem.</div>
+</div>
+<div class="card c7"><h3>Relatório e recomendações operacionais</h3><div class="pillRow"><span class="pill">Contexto do projeto</span><span class="pill">Ação recomendada</span><span class="pill">Critérios de validação</span></div><textarea id="assistOut" style="min-height:560px" placeholder="O relatório do assistente aparecerá aqui."></textarea></div>
+<div class="card c12"><h3>Fluxo recomendado</h3><div class="three"><div class="item"><b>1. Diagnosticar</b><div class="muted">Identificar lacunas e inconsistências.</div></div><div class="item"><b>2. Executar</b><div class="muted">Transformar lacunas em tarefas concretas.</div></div><div class="item"><b>3. Validar</b><div class="muted">Conferir fontes, método, autoria e normas.</div></div></div></div>
+</div></section>
 
   <section id="editorView" class="view">
     <div class="card">
@@ -722,7 +710,7 @@ function pick(k,a){ let i=Math.floor(Math.random()*a.length); if(a.length>1 && l
 
 function dataObject(){
   let d={}; IDs.forEach(id => d[id] = $(id)?.value || '');
-  return {...d, editor:$('editor').innerHTML, refs, tasks, outline, snapshots, version:'4.0', savedAt:new Date().toISOString()};
+  return {...d, editor:$('editor').innerHTML, refs, tasks, outline, snapshots, version:'4.2', savedAt:new Date().toISOString()};
 }
 function applyData(d){
   IDs.forEach(id => { if($(id) && d[id] != null) $(id).value = d[id]; });
@@ -823,60 +811,54 @@ function outlineToEditor(){
 }
 
 function assist(){
-  const sec=v('assistSec'), act=v('assistAction'), notes=v('assistNotes');
-  const theme=v('tema')||'[tema a definir]', prob=v('problema')||'[problema a definir]', obj=v('objetivoG')||'[objetivo geral a definir]', method=v('metodo')||'[método a definir]';
-  const starts = {
-    'Introdução':[
-      'O texto introdutório pode partir da contextualização de '+theme+' e conduzir, progressivamente, ao problema de pesquisa: '+prob+'.',
-      'A abertura do trabalho deve situar '+theme+' e explicitar a questão investigada: '+prob+'.'
-    ],
-    'Justificativa':[
-      'A justificativa deve demonstrar a relevância acadêmica, social ou profissional de investigar '+theme+'.',
-      'A pertinência do estudo precisa ser sustentada por necessidades ou lacunas verificáveis relacionadas a '+theme+'.'
-    ],
-    'Referencial teórico':[
-      'O referencial deve organizar, comparar e problematizar fontes reais relacionadas a '+theme+'.',
-      'A fundamentação teórica precisa articular conceitos e evidências verificáveis, evitando mera sequência de citações.'
-    ],
-    'Metodologia':[
-      'O percurso metodológico deve permanecer coerente com o objetivo geral — '+obj+' — e com o procedimento informado: '+method+'.',
-      'A metodologia deve explicar como o estudo buscará responder ao problema, detalhando '+method+' e seus critérios.'
-    ],
-    'Resultados':[
-      'Esta seção deve conter somente achados realmente produzidos ou coletados pelo estudo.',
-      'Os resultados devem ser apresentados de maneira verificável e alinhada aos objetivos específicos.'
-    ],
-    'Discussão':[
-      'A discussão deve interpretar os achados e confrontá-los com as fontes efetivamente utilizadas.',
-      'A interpretação precisa distinguir resultado observado, inferência e comparação com a literatura.'
-    ],
-    'Considerações finais':[
-      'O encerramento deve responder ao problema e demonstrar em que medida os objetivos foram alcançados.',
-      'As considerações finais devem sintetizar os achados sem introduzir resultados novos.'
-    ]
-  };
-  let out = [pick(sec, starts[sec] || starts['Introdução'])];
-  if(act === 'Gerar perguntas de revisão'){
-    out = [
-      'Perguntas de revisão para '+sec+':',
-      '1. O trecho responde diretamente ao problema de pesquisa?',
-      '2. Cada afirmação factual está sustentada por evidência verificável?',
-      '3. Há distinção clara entre dados, interpretação e recomendação?',
-      '4. O conteúdo contribui para o objetivo geral ('+obj+')?',
-      '5. Existem generalizações que precisam ser delimitadas?',
-      '6. As fontes citadas aparecem na lista de referências?'
-    ];
-  }else if(notes){
-    if(act === 'Resumir minhas notas') out.push('Síntese das notas fornecidas pelo autor: '+notes.split(/\s+/).slice(0,90).join(' ')+(notes.split(/\s+/).length>90?'…':''));
-    else if(act === 'Reformular minhas notas') out.push('A partir das informações fornecidas pelo autor, pode-se estruturar o argumento nos seguintes termos: '+notes);
-    else if(act === 'Expandir com cautela') out.push('As notas registradas apontam: '+notes+'\n\n[VALIDAR FONTES] Desenvolva relações conceituais adicionais somente quando houver fontes ou evidências que as sustentem.');
-    else out.push('Pontos de desenvolvimento a partir das notas do autor:\n• '+notes.replace(/\n+/g,'\n• '));
-  }else{
-    out.push('[VALIDAR CONTEÚDO] Nenhuma nota ou evidência foi fornecida. Insira material próprio e fontes reais antes de transformar esta estrutura em texto final.');
-  }
-  out.push('Revise o resultado quanto à precisão, autoria, adequação metodológica e normas da instituição.');
-  $('assistOut').value = out.join('\n\n');
+const mode=v('assistMode')||'diagnostico', sec=v('assistSec')||'Projeto completo', notes=v('assistNotes');
+const theme=v('tema')||'Não informado', problem=v('problema')||'Não informado', obj=v('objetivoG')||'Não informado', objectives=v('objetivosE')||'Não informado', method=v('metodo')||'Não informado';
+const sourceList=(Array.isArray(refs)?refs:[]).map((r,i)=>(i+1)+'. '+(r.title||r.titulo||r.name||r.autor||'Fonte sem título')+' '+(r.year||r.ano||'')+' '+(r.url||r.link||'')).join('\n')||'Nenhuma referência cadastrada.';
+const gaps=[]; if(theme==='Não informado')gaps.push('Definir tema e recorte.'); if(problem==='Não informado')gaps.push('Formular problema em forma de pergunta.'); if(obj==='Não informado')gaps.push('Definir objetivo geral.'); if(method==='Não informado')gaps.push('Definir e justificar a metodologia.'); if(!refs.length)gaps.push('Cadastrar fontes reais.'); if(!outline.length)gaps.push('Gerar e revisar a estrutura.'); if(wordCount()<250)gaps.push('Desenvolver texto inicial.');
+const context=['CONTEXTO DO PROJETO','Tipo: '+(v('tipo')||'Trabalho acadêmico'),'Curso: '+(v('curso')||'Não informado'),'Instituição: '+(v('instituicao')||'Não informada'),'Tema: '+theme,'Delimitação: '+(v('delimitacao')||'Não informada'),'Problema: '+problem,'Objetivo geral: '+obj,'Objetivos específicos: '+(objectives||'Não informados'),'Método: '+method,'Fontes cadastradas:\n'+sourceList,'Texto atual: '+wordCount()+' palavras','Cronograma: '+tasks.length+' etapa(s)','Foco: '+sec].join('\n');
+const material=notes||'Nenhum material adicional informado.';
+let o=['ASSISTENTE ACADÊMICO INTELIGENTE — RELATÓRIO OPERACIONAL','Gerado em: '+new Date().toLocaleString('pt-BR'),'',context,''];
+const bullets=(h,items)=>{o.push(h);items.forEach(x=>o.push('• '+x));};
+if(mode==='diagnostico'){
+o.push('DIAGNÓSTICO');o.push('Completude indicativa: '+completion()+'% (preenchimento de campos; não representa aprovação acadêmica).');
+bullets('LACUNAS PRIORITÁRIAS',gaps.length?gaps:['Campos básicos preenchidos; prossiga para auditoria qualitativa.']);
+bullets('TESTES DE COERÊNCIA',['O problema deve ser respondido pelo objetivo geral.','Cada objetivo específico deve corresponder a uma etapa verificável.','A metodologia deve explicar obtenção e análise dos dados.','Resultados devem decorrer de dados realmente produzidos.','Afirmações teóricas precisam de fontes identificáveis.']);
+o.push('PARECER: '+(gaps.length?'Projeto em desenvolvimento. Resolva as lacunas na ordem apresentada.':'Estrutura básica preenchida; faça revisão crítica e validação institucional.'));
+}else if(mode==='plano'){
+o.push('PLANO DE AÇÃO PRIORIZADO');o.push((gaps.length?gaps:['Revisar problema e objetivos.','Conferir matriz de fontes e evidências.','Executar auditoria textual e institucional.','Preparar apresentação e respostas para a banca.']).map((x,i)=>(i+1)+'. '+x+' — registre a conclusão no módulo correspondente.').join('\n'));
+o.push('\nCRITÉRIO: não considerar uma etapa concluída apenas por produzir texto; exigir evidência, registro ou validação.');
+}else if(mode==='metodologia'){
+o.push('DESENHO E COERÊNCIA METODOLÓGICA');
+bullets('ELEMENTOS A DEFINIR OU CONFIRMAR',['Abordagem qualitativa, quantitativa ou mista, justificada pelo problema.','Natureza básica ou aplicada, conforme a finalidade real.','Objetivos exploratórios, descritivos, explicativos ou combinação justificada.','Procedimentos efetivamente adotados: bibliográfico, documental, estudo de caso, levantamento, experimento ou outro.','Universo, participantes, corpus ou documentos e critérios de inclusão/exclusão.','Instrumentos, protocolo de coleta e período.','Técnica de análise compatível com os dados.','Ética, consentimento, anonimização e autorizações, quando aplicáveis.']);
+o.push('TESTE DE ALINHAMENTO: problema → objetivo geral → objetivos específicos → coleta → análise → resultados. Não atribua ao estudo procedimentos que não foram realizados.');
+}else if(mode==='evidencias'){
+o.push('MATRIZ DE EVIDÊNCIAS — MODELO');o.push('Afirmação/ideia | Fonte ou dado | Página/localização | Evidência | Uso no argumento | Status');
+o.push('\nFONTES CADASTRADAS:\n'+sourceList);
+bullets('REGRAS',['Não presumir que uma obra sustenta uma afirmação apenas pelo título.','Conferir autoria, ano, edição, página e DOI/URL na fonte original.','Separar evidência, interpretação e hipótese.','Marcar afirmações sem sustentação como [VALIDAR FONTE].']);
+}else if(mode==='redacao'){
+o.push('ROTEIRO DE REDAÇÃO RESPONSÁVEL — '+sec.toUpperCase());
+bullets('SEQUÊNCIA',['Apresente a ideia central do parágrafo.','Acrescente evidência, dado ou fonte real.','Explique a relação com o problema de pesquisa.','Conecte o parágrafo ao objetivo da seção.','Revise precisão, coesão, clareza e autoria.']);
+o.push('\nMATERIAL DO AUTOR:\n'+material+'\n\nUse somente as informações fornecidas. Onde faltar sustentação, mantenha [VALIDAR] em vez de completar por suposição.');
+}else if(mode==='auditoria'){
+o.push('AUDITORIA CRÍTICA — CHECKLIST');
+['Problema e objetivos: a pergunta está delimitada e o objetivo responde a ela?','Metodologia: o método é reproduzível e corresponde ao que foi feito?','Evidências: afirmações factuais possuem fonte ou dado rastreável?','Resultados: há separação entre achado, interpretação e opinião?','Discussão: os achados dialogam criticamente com as fontes?','Referências: todas as citações têm referência correspondente e vice-versa?','Integridade: há autoria, paráfrase própria e ausência de dados inventados?','Normas: o texto foi confrontado com o manual institucional atualizado?'].forEach((x,i)=>o.push((i+1)+'. [ ] Conforme  [ ] Ajustar — '+x));
+o.push('\nEsta auditoria é orientativa e não substitui avaliação humana nem verificação especializada de similaridade.');
+}else if(mode==='banca'){
+o.push('PREPARAÇÃO PARA APRESENTAÇÃO E BANCA');
+bullets('PERGUNTAS PROVÁVEIS',['Por que escolheu o tema e qual sua relevância?','Qual problema o trabalho responde?','O que diferencia seu recorte?','Por que a metodologia é adequada?','Quais são as limitações?','Quais resultados respondem a cada objetivo?','Que contribuição é sustentada pelas evidências?','O que faria diferente em pesquisa futura?']);
+o.push('\nESTRUTURA: contexto e problema → objetivo → método → resultados/evidências → discussão → conclusão e limitações. Não ensaie resultados que não estejam documentados.');
+}else{
+o.push('COMANDO AVANÇADO PARA MODELO DE IA EXTERNO');
+o.push('Atue como orientador acadêmico e revisor metodológico criterioso. Analise o contexto e execute a tarefa referente a: '+sec+'. Apoie o estudante sem substituir sua autoria.');
+o.push('REGRAS: não inventar autores, títulos, DOI, páginas, citações, dados, resultados ou procedimentos; distinguir fato, hipótese e recomendação; apontar lacunas; pedir informações quando necessário; preservar a voz do autor; respeitar o manual institucional; fornecer fontes apenas com dados verificáveis e links rastreáveis.');
+o.push('\n'+context+'\n\nMATERIAL DO AUTOR:\n'+material);
+o.push('\nENTREGUE: 1) diagnóstico; 2) inconsistências; 3) perguntas necessárias; 4) proposta de melhoria; 5) checklist de validação; 6) versão revisada somente quando houver material suficiente. Identifique tudo que exige confirmação humana.');
 }
+o.push('\n\nMATERIAL ADICIONAL:\n'+material);
+o.push('\nINTEGRIDADE: este motor executa análise estruturada local; não consulta automaticamente bases científicas nem comprova a veracidade das fontes. Confira as fontes originais e as normas institucionais.');
+$('assistOut').value=o.join('\n'); saveAll();
+}
+function copyAssistantResult(){const value=v('assistOut');if(!value){alert('Execute uma análise antes de copiar.');return;}if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(value).then(()=>alert('Relatório copiado.')).catch(()=>{$('assistOut').select();document.execCommand('copy');});}else{$('assistOut').select();document.execCommand('copy');}}
 function assistantToEditor(){
   let s = v('assistOut');
   if(!s) return;
